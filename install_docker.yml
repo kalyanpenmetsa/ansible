@@ -1,0 +1,27 @@
+---
+- hosts: kube-workers
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: install pre-requisites for docker
+      yum: name={{item}} state=present
+      with_items:
+             - yum-utils
+             - device-mapper-persistent-data
+             - lvm2
+
+    - name: install docker-ce
+      yum: name=docker-ce state=present 
+
+    - name: add user mod
+      user:
+        name: penmetsa29
+        groups: docker
+        append: yes
+
+    - name: start docker
+      systemd:
+          name: docker
+          state: started
+          enabled: yes
+          masked: no

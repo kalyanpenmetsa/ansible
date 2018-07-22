@@ -1,0 +1,30 @@
+---
+- hosts: kube-workers
+  gather_facts: yes
+  vars:
+    userName: penmetsa29
+  become: yes
+  tasks:
+    - name: Installing latest version of nginx
+      yum: name=nginx state=present
+    - name: start nginx webserver
+      service:
+          name: nginx
+          state: started
+    - name: Check that you can connect (GET) to a page and it returns a status 200
+      uri:
+         url: http://{{ ansible_hostname }}
+         return_content: yes
+      register: webpage
+    - name: Template for installing nginx configurations
+      template: src=templates/nginx.conf.j2 dest=/etc/nginx/nginx.conf mode=0644
+    - name: reload nginx
+      service:
+          name: nginx
+          state: reloaded
+    - name: Code deploy to remote nodes
+      copy:
+         src: files/code.html
+         dest: /usr/share/nginx/html/code.html
+         mode: 0644
+         backup: no
