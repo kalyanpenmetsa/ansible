@@ -1,0 +1,30 @@
+---
+- hosts: kube-workers
+  become: yes
+  vars: 
+      kafkaVersion: kafka_2.11-0.11.0.3
+      zk_client_port: 2181
+  tasks: 
+    - name: Install jdk
+      yum:
+        name: java-1.8.0-openjdk.x86_64
+        state: present
+    - name: Copy kafka archive to remote dest
+      unarchive:
+        src: ./{{ kafkaVersion }}.tgz
+        dest: /var/
+    - name: Start zookeeper on remote
+      command: '/var/{{ kafkaVersion }}/bin/zookeeper-server-start.sh -daemon /var/{{ kafkaVersion }}/config/zookeeper.properties'
+    - name: Install kafka server template on remote
+      template: 
+        src: templates/kafka-server-start.sh.j2
+        dest: /var/{{ kafkaVersion }}/bin/kafka-server-start.sh
+#    - name: Checking if Port {{zk_client_port}} is available.
+#      wait_for:
+#        host: 104.197.47.209
+#        port: "{{ zk_client_port }}"
+#        delay: 5
+#        timeout: 15
+#        tags: kafka
+    - name: Start Kafka server on remote
+      command: '/var/{{ kafkaVersion }}/bin/kafka-server-start.sh -daemon /var/{{ kafkaVersion }}/config/server.properties'
