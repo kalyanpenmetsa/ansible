@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    name: kalyan
+  tasks:
+    - debug:
+        msg: "Name is {{ name }}"
